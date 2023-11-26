@@ -25,6 +25,11 @@ on:
         required: true
         type: string
 
+      outside_deps:
+        required: false
+        type: string
+        default: "echo"
+
       ##### optioanl inputs #####
 
       # architecture
@@ -44,8 +49,6 @@ jobs:
     runs-on: ${{inputs.machine_host}}
 
     steps:
-    - name: install dependencies
-      run: ${{inputs.deps}}
 
     - uses: actions/checkout@v3
       with:
@@ -124,6 +127,9 @@ jobs:
       if: steps.redis-already-built.outcome != 'success'
       run: |
         pip3 install s3cmd
+
+    - name: install dependencies
+      run: ${{inputs.outside_deps}}
 
     - name: determine if in fork
       id: iamafork                                                                                                                                              
