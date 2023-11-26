@@ -1,4 +1,4 @@
-name: arm flow
+name: Build (arm64) redis
 
 on: 
     push:
