@@ -58,10 +58,13 @@ jobs:
         path: redis-builder
 
     - name: load envvars
-      uses: c-py/action-dotenv-to-setenv@v5
       id: get_config_versions
-      with:
-        env-file: redis-builder/vars
+      run: |
+        source redis-builder/vars
+        echo VERSION=$VERSION >> $GITHUB_OUTPUT
+        echo PACKAGEDREDISVERSION=$PACKAGEDREDISVERSION >> $GITHUB_OUTPUT
+        echo S3BASE=$S3BASE>> $GITHUB_OUTPUT
+        echo HTTPSS3BASE=$HTTPSS3BASE>> $GITHUB_OUTPUT
 
     - name: check if already built
       id: redis-already-built
