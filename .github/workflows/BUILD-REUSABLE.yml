@@ -64,7 +64,7 @@ jobs:
         echo VERSION=$REDISVERSION >> $GITHUB_OUTPUT
         echo PACKAGEDREDISVERSION=$PACKAGEDREDISVERSION >> $GITHUB_OUTPUT
         echo S3BASE=$S3BASE >> $GITHUB_OUTPUT
-        echo HTTPSS3BASE=$HTTPSS3BASE >> $GITHUB_OUTPUT
+        echo HTTPS3BASE=$HTTPS3BASE >> $GITHUB_OUTPUT
 
     - name: check if already built
       id: redis-already-built
@@ -94,7 +94,7 @@ jobs:
     - name: package redis for s3
       if: steps.redis-already-built.outcome != 'success'
       run: |
-        mkdir redis-${{steps.get_config_versions.outputs.VERSION}}-${{inputs.osnick}}-${{inputs.arch}}
+        mkdir redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}
         cp redis/src/redis-server \
            redis/src/redis-sentinel \
            redis/src/redis-check-aof \
