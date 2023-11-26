@@ -1,4 +1,4 @@
-name: Build redis
+name: Build (intel) redis
 
 on:
     push:

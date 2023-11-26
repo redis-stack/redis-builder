@@ -1,4 +1,4 @@
-name: Build redis
+name: Build (mac) redis
 
 on:
     push:
@@ -31,7 +31,7 @@ jobs:
     macos-x86_64:
         uses: ./.github/workflows/REUSABLE-osx.yml
         with:
-            macos_type: macos-latest-large
+            macos_type: macos-latest
             deps: brew install openssl@3 coreutils
             build_script: scripts/build-osx.sh
             osnick: monterey
