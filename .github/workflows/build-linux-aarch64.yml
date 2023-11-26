@@ -1,0 +1,90 @@
+name: arm flow
+
+on: 
+    push:
+        paths-ignore:
+            - 'docs/**'
+            - 'README.md'
+        branches:
+            - master
+            - '[0-9].[0-9]'
+            - '[0-9].[0-9].[0-9]'
+    pull_request:
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-buildarm64
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    packages: write
+
+jobs:
+
+  start-arm64-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION_ID }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ec2-image-id: ${{ secrets.AWS_AMI_ID }}
+          ec2-instance-type: t4g.small
+          subnet-id: ${{ secrets.AWS_SUBNET_ID }}
+          security-group-id: ${{ secrets.AWS_SECGROUP_ID }}
+
+  ubuntu-bionic-arm64:
+    needs: start-arm64-runner
+    uses: ./.github/workflows/REUSABLE-linux.yml
+    with:
+        docker_image: ubuntu:18.04
+        deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+        osnick: ubuntu18.04
+        arch: arm64
+    secrets: inherit
+
+  ubuntu-focal-arm64:
+    needs: start-arm64-runner
+    uses: ./.github/workflows/REUSABLE-linux.yml
+    with:
+        docker_image: ubuntu:20.04
+        deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+        osnick: ubuntu20.04
+        arch: arm64
+    secrets: inherit
+
+  stop-arm64-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-arm64-runner
+      - ubuntu-bionic-arm64
+      - ubuntu-focal-arm64
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION_ID }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          label: ${{ needs.start-arm64-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-arm64-runner.outputs.ec2-instance-id }}

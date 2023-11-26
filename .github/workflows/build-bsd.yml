@@ -1,0 +1,34 @@
+name: Build (bsd) redis
+
+on:
+    push:
+        paths-ignore:
+            - 'docs/**'
+            - 'README.md'
+        branches:
+            - master
+            - '[0-9].[0-9]'
+            - '[0-9].[0-9].[0-9]'
+    pull_request:
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-bsd
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    packages: write
+
+jobs:
+
+  freebsd-13_2-x86-64:
+    uses: ./.github/workflows/REUSABLE-bsd.yml
+    secrets: inherit
+    with:
+      osversion: 13.2
+      osname: freebsd
+      machine_host: ubuntu-latest
+      osnick: freebsd13.2
+      deps: |
+        sudo pkg install -y bash gmake
