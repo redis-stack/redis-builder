@@ -5,13 +5,16 @@ on:
         paths-ignore:
             - 'docs/**'
             - 'README.md'
+        branches:
+            - master
+            - '[0-9].[0-9]'
+            - '[0-9].[0-9].[0-9]'
     pull_request:
     workflow_dispatch:
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-buildx86
     cancel-in-progress: true
-
 
 permissions:
     contents: read
