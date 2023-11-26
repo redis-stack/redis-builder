@@ -94,7 +94,7 @@ jobs:
         architecture: ${{inputs.arch}}
         run: |
             ${{inputs.deps}}
-            bash ${{inputs.build_script}}
+            bash redis-builder/${{inputs.build_script}}
 
     - name: package redis for s3
       if: steps.redis-already-built.outcome != 'success'
