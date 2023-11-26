@@ -60,7 +60,7 @@ jobs:
     - name: load envvars
       id: get_config_versions
       run: |
-        source redis-builder/vars
+        . redis-builder/vars
         echo VERSION=$VERSION >> $GITHUB_OUTPUT
         echo PACKAGEDREDISVERSION=$PACKAGEDREDISVERSION >> $GITHUB_OUTPUT
         echo S3BASE=$S3BASE>> $GITHUB_OUTPUT
