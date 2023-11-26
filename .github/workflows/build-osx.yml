@@ -9,7 +9,7 @@ on:
     workflow_dispatch:
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-linuxx64
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-osx
     cancel-in-progress: true
 
 
