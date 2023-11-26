@@ -5,6 +5,10 @@ on:
         paths-ignore:
             - 'docs/**'
             - 'README.md'
+        branches:
+            - master
+            - '[0-9].[0-9]'
+            - '[0-9].[0-9].[0-9]'
     pull_request:
     workflow_dispatch:
 
@@ -19,21 +23,72 @@ permissions:
 
 jobs:
 
-    # macos-arm64:
-    #     uses: ./.github/workflows/REUSABLE-osx.yml
-    #     secrets: inherit
-    #     with:
-    #         macos_type: macos-latest-large
-    #         deps: brew install openssl@3 coreutils
-    #         arch: arm64
-    #         build_script: scripts/build-osx-arm.sh
-    #         osnick: monterey
-
-    macos-x86_64:
-        uses: ./.github/workflows/REUSABLE-osx.yml
-        secrets: inherit
+  start-osxarm-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-            macos_type: macos-latest
-            deps: brew install openssl@3 coreutils
-            build_script: scripts/build-osx.sh
-            osnick: monterey
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION_ID }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: arielly-parussulo/ec2-github-runner@0.0.22
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ec2-image-id: ami-046ba9681dc60fa68
+          ec2-instance-type: mac2.metal
+          subnet-id: ${{ secrets.AWS_SUBNET_ID }}
+          security-group-id: ${{ secrets.AWS_SECGROUP_ID }}
+          scope: repository
+          host-id: ${{ secrets.AWS_M1_HOSTID }}
+
+
+  macos-arm64:
+     needs: start-osxarm-runner
+     uses: ./.github/workflows/REUSABLE-osx.yml
+     secrets: inherit
+     with:
+        macos_type: ${{needs.start-osxarm-runner.outputs.label}}
+        deps: brew install openssl@3 coreutils
+        arch: arm64
+        build_script: scripts/build-osx-arm.sh
+        osnick: monterey
+
+  stop-osxarm-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-osxarm-runner
+      - macos-arm64
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION_ID }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          label: ${{ needs.start-osxarm-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-osxarm-runner.outputs.ec2-instance-id }}
+
+  macos-x86_64:
+    uses: ./.github/workflows/REUSABLE-osx.yml
+    secrets: inherit
+    with:
+        macos_type: macos-latest
+        deps: brew install openssl@3 coreutils
+        arch: arm64
+        build_script: scripts/build-osx.sh
+        osnick: monterey

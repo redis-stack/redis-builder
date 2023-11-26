@@ -37,7 +37,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION_ID }}
       - name: Start EC2 runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.3.3
         with:
           mode: start
           github-token: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -45,33 +45,39 @@ jobs:
           ec2-instance-type: t4g.small
           subnet-id: ${{ secrets.AWS_SUBNET_ID }}
           security-group-id: ${{ secrets.AWS_SECGROUP_ID }}
+          pre-runner-script: |
+            sudo apt update &&
+            sudo apt install -y docker git 
+            sudo systemctl enable docker
+            sudo systemctl start docker
 
   ubuntu-bionic-arm64:
     needs: start-arm64-runner
     uses: ./.github/workflows/REUSABLE-linux.yml
+    secrets: inherit
     with:
         docker_image: ubuntu:18.04
         deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
         osnick: ubuntu18.04
         arch: arm64
-    secrets: inherit
+        runs_on: ${{needs.start-arm64-runner.outputs.label}}
 
-  ubuntu-focal-arm64:
-    needs: start-arm64-runner
-    uses: ./.github/workflows/REUSABLE-linux.yml
-    with:
-        docker_image: ubuntu:20.04
-        deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
-        osnick: ubuntu20.04
-        arch: arm64
-    secrets: inherit
+#   ubuntu-focal-arm64:
+#     needs: start-arm64-runner
+#     uses: ./.github/workflows/REUSABLE-linux.yml
+#     with:
+#         docker_image: ubuntu:20.04
+#         deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+#         osnick: ubuntu20.04
+#         arch: arm64
+#     secrets: inherit
 
   stop-arm64-runner:
     name: Stop self-hosted EC2 runner
     needs:
       - start-arm64-runner
       - ubuntu-bionic-arm64
-      - ubuntu-focal-arm64
+      # - ubuntu-focal-arm64
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
