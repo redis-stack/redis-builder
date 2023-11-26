@@ -20,6 +20,11 @@ on:
 
       ##### optioanl inputs #####
 
+      runs_on:
+        required: false
+        type: string
+        default: ubuntu-latest
+
       # architecture
       arch:
         required: false
@@ -34,7 +39,7 @@ on:
 jobs:
 
    build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs_on }}
     container: ${{inputs.docker_image}}
 
     steps:

@@ -49,29 +49,30 @@ jobs:
   ubuntu-bionic-arm64:
     needs: start-arm64-runner
     uses: ./.github/workflows/REUSABLE-linux.yml
+    secrets: inherit
     with:
         docker_image: ubuntu:18.04
         deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
         osnick: ubuntu18.04
         arch: arm64
-    secrets: inherit
+        runs_on: ${{needs.start-arm64-runner.outputs.label}}
 
-  ubuntu-focal-arm64:
-    needs: start-arm64-runner
-    uses: ./.github/workflows/REUSABLE-linux.yml
-    with:
-        docker_image: ubuntu:20.04
-        deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
-        osnick: ubuntu20.04
-        arch: arm64
-    secrets: inherit
+#   ubuntu-focal-arm64:
+#     needs: start-arm64-runner
+#     uses: ./.github/workflows/REUSABLE-linux.yml
+#     with:
+#         docker_image: ubuntu:20.04
+#         deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+#         osnick: ubuntu20.04
+#         arch: arm64
+#     secrets: inherit
 
   stop-arm64-runner:
     name: Stop self-hosted EC2 runner
     needs:
       - start-arm64-runner
       - ubuntu-bionic-arm64
-      - ubuntu-focal-arm64
+      # - ubuntu-focal-arm64
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
