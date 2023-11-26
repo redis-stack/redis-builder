@@ -21,6 +21,7 @@ jobs:
 
     macos-arm64:
         uses: ./.github/workflows/REUSABLE-osx.yml
+        secrets: inherit
         with:
             macos_type: macos-latest-large
             deps: brew install openssl@3 coreutils
@@ -30,6 +31,7 @@ jobs:
 
     macos-x86_64:
         uses: ./.github/workflows/REUSABLE-osx.yml
+        secrets: inherit
         with:
             macos_type: macos-latest
             deps: brew install openssl@3 coreutils
