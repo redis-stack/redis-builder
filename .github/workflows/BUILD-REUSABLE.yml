@@ -39,11 +39,12 @@ on:
 jobs:
 
    build-redis:
-    name: ${{inputs.osnick}} (${{inputs.arch}})
-
     runs-on: ubuntu-latest
     container: ${{inputs.docker_image}}
+
     steps:
+    - name: install dependencies
+      run: ${{inputs.deps}}
 
     - name: determine if in fork
       id: iamafork                                                                                                                                              
@@ -52,15 +53,11 @@ jobs:
         echo "am I fork: ${amfork}"
         echo "IAMAFORK=$amfork" >> $GITHUB_OUTPUT
 
-    - name: install dependencies
-      run: ${{inputs.deps}}
-
-    - name: check out
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         path: redis-builder
 
-    - name: load versions
+    - name: load envvars
       uses: c-py/action-dotenv-to-setenv@v5
       id: get_config_versions
       with:
