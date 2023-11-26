@@ -1,0 +1,28 @@
+name: Build redis
+
+on:
+    push:
+        paths-ignore:
+            - 'docs/**'
+            - 'README.md'
+    pull_request:
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+
+permissions:
+    contents: read
+    packages: write
+
+jobs:
+
+    ubuntu-bionic-x86-64: 
+        uses: ./.github/workflows/BUILD-REUSABLE.yml
+        with:
+            docker_image: ubuntu:bionic
+            deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+            osnick: ubuntu18.04
+        secrets: inherit

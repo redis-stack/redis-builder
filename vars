@@ -1,0 +1,4 @@
+REDISVERSION=7.2.3
+PACKAGEDREDISVERSION=${REDISVERSION}-1
+S3BASE=s3://redismodules/dependencies/redis
+HTTPS3BASE=https://s3.amazonaws.com/redismodules/dependencies/redis
