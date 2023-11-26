@@ -1,11 +1,18 @@
-name: Build and Publish
+name: Build
 
 on:
   workflow_call:
     inputs:
 
-      # docker image for compiling redis
-      docker_image:
+      machine_host:
+        required: true
+        type: string
+
+      osname:
+        required: true
+        type: string
+
+      osversion:
         required: true
         type: string
 
@@ -18,6 +25,11 @@ on:
         required: true
         type: string
 
+      outside_deps:
+        required: false
+        type: string
+        default: "echo"
+
       ##### optioanl inputs #####
 
       # architecture
@@ -26,32 +38,17 @@ on:
         type: string
         default: x86_64
 
-      osname:
-        required: false
-        type: string
-        default: Linux
-
       build_script:
         required: false
         type: string
-        default: build.sh
+        default: scripts/build-bsd.sh
 
 jobs:
 
    build:
-    runs-on: ubuntu-latest
-    container: ${{inputs.docker_image}}
+    runs-on: ${{inputs.machine_host}}
 
     steps:
-    - name: install dependencies
-      run: ${{inputs.deps}}
-
-    - name: determine if in fork
-      id: iamafork                                                                                                                                              
-      run: |
-        amfork=`jq '.pull_request.head.repo.fork' $GITHUB_EVENT_PATH`
-        echo "am I fork: ${amfork}"
-        echo "IAMAFORK=$amfork" >> $GITHUB_OUTPUT
 
     - uses: actions/checkout@v3
       with:
@@ -88,8 +85,16 @@ jobs:
         key: cache-${{hashFiles('.github/workflows/*.yml')}}-${{inputs.arch}}-build
 
     - name: make
+      uses: cross-platform-actions/action@v0.21.1
       if: steps.redis-already-built.outcome != 'success'
-      run: bash redis-builder/${{inputs.build_script}}
+      with:
+        operating_system: ${{inputs.osname}}
+        version: ${{inputs.osversion}}
+        shell: bash
+        architecture: ${{inputs.arch}}
+        run: |
+            ${{inputs.deps}}
+            bash redis-builder/${{inputs.build_script}}
 
     - name: package redis for s3
       if: steps.redis-already-built.outcome != 'success'
@@ -122,6 +127,16 @@ jobs:
       if: steps.redis-already-built.outcome != 'success'
       run: |
         pip3 install s3cmd
+
+    - name: install dependencies
+      run: ${{inputs.outside_deps}}
+
+    - name: determine if in fork
+      id: iamafork                                                                                                                                              
+      run: |
+        amfork=`jq '.pull_request.head.repo.fork' $GITHUB_EVENT_PATH`
+        echo "am I fork: ${amfork}"
+        echo "IAMAFORK=$amfork" >> $GITHUB_OUTPUT
 
     - name: persist redis to s3
       if: steps.redis-already-built.outcome != 'success' && steps.iamafork.outputs.IAMAFORK != 'false'

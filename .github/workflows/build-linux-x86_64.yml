@@ -1,4 +1,4 @@
-name: Build redis
+name: Build (intel) redis
 
 on:
     push:
@@ -13,7 +13,7 @@ on:
     workflow_dispatch:
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-buildx86
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-linuxx64
     cancel-in-progress: true
 
 permissions:
@@ -23,29 +23,29 @@ permissions:
 jobs:
 
     ubuntu-bionic-x86-64: 
-        uses: ./.github/workflows/BUILD-REUSABLE.yml
+        uses: ./.github/workflows/REUSABLE-linux.yml
+        secrets: inherit
         with:
             docker_image: ubuntu:18.04
             deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
             osnick: ubuntu18.04
-        secrets: inherit
 
     rhel7-x86-64: 
-        uses: ./.github/workflows/BUILD-REUSABLE.yml
+        uses: ./.github/workflows/REUSABLE-linux.yml
+        secrets: inherit
         with:
             docker_image: centos:7
             deps: |
                 yum install -y epel-release 
                 yum install -y gcc make jemalloc-devel openssl-devel python3 python3-pip jq wget
             osnick: rhel7
-        secrets: inherit
 
     rhel8-x86-64: 
-        uses: ./.github/workflows/BUILD-REUSABLE.yml
+        uses: ./.github/workflows/REUSABLE-linux.yml
+        secrets: inherit
         with:
             docker_image: oraclelinux:8
             deps: |
                 dnf install -y oracle-epel-release-el8
                 dnf install -y gcc make jemalloc-devel openssl-devel tar git python3 python3-pip jq wget
             osnick: rhel8
-        secrets: inherit
