@@ -5,6 +5,10 @@ on:
         paths-ignore:
             - 'docs/**'
             - 'README.md'
+        branches:
+            - master
+            - '[0-9].[0-9]'
+            - '[0-9].[0-9].[0-9]'
     pull_request:
     workflow_dispatch:
 
@@ -38,7 +42,7 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.GH_ACCESS_TOKEN }}
-          ec2-image-id: ${{ secrets.AWS_AMI_ID }}
+          ec2-image-id: ami-046ba9681dc60fa68
           ec2-instance-type: mac2.metal
           subnet-id: ${{ secrets.AWS_SUBNET_ID }}
           security-group-id: ${{ secrets.AWS_SECGROUP_ID }}
