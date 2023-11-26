@@ -1,4 +1,4 @@
-name: Build and Publish
+name: Build
 
 on:
   workflow_call:
@@ -26,15 +26,10 @@ on:
         type: string
         default: x86_64
 
-      osname:
-        required: false
-        type: string
-        default: Linux
-
       build_script:
         required: false
         type: string
-        default: build.sh
+        default: scripts/build.sh
 
 jobs:
 

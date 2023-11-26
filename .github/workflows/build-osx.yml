@@ -1,0 +1,37 @@
+name: Build redis
+
+on:
+    push:
+        paths-ignore:
+            - 'docs/**'
+            - 'README.md'
+    pull_request:
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-linuxx64
+    cancel-in-progress: true
+
+
+permissions:
+    contents: read
+    packages: write
+
+jobs:
+
+    macos-arm64:
+        uses: ./.github/workflows/REUSABLE-osx.yml
+        with:
+            macos_type: macos-latest-large
+            deps: brew install openssl@3 coreutils
+            arch: arm64
+            build_script: scripts/build-osx-arm.sh
+            osnick: monterey
+
+    macos-x86_64:
+        uses: ./.github/workflows/REUSABLE-osx.yml
+        with:
+            macos_type: macos-latest-large
+            deps: brew install openssl@3 coreutils
+            build_script: scripts/build-osx.sh
+            osnick: monterey
