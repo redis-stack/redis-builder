@@ -30,5 +30,17 @@ jobs:
       osname: freebsd
       machine_host: ubuntu-latest
       osnick: freebsd13.2
-      outside_deps: apt-get update -qq && apt-get install -qqy jq
+      outside_deps: sudo apt-get update -qq && sudo apt-get install -qqy jq
+      deps: sudo pkg install -y bash gmake
+
+  freebsd-13_2-arm64:
+    uses: ./.github/workflows/REUSABLE-bsd.yml
+    secrets: inherit
+    with:
+      osversion: 13.2
+      osname: freebsd
+      machine_host: ubuntu-latest
+      arch: arm64
+      osnick: freebsd13.2
+      outside_deps: sudo apt-get update -qq && sudo apt-get install -qqy jq
       deps: sudo pkg install -y bash gmake
