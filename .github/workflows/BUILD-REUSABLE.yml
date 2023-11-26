@@ -104,16 +104,6 @@ jobs:
            redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}
         tar -czvf redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}.tgz \
            redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}
-    - name: install s3cmd
-      if: steps.redis-already-built.outcome != 'success'
-      run: |
-        pip3 install s3cmd
-
-    - name: persist redis to s3
-      if: steps.redis-already-built.outcome != 'success' && steps.iamafork.outputs.IAMAFORK == 'false'
-      run: |
-        s3cmd --access_key=${{secrets.AWS_ACCESS_KEY_ID}} --secret_key=${{secrets.AWS_SECRET_ACCESS_KEY}} --region=us-east-1 put -P redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osname}}-${{inputs.osnick}}-${{inputs.arch}}.tgz \
-          ${{steps.get_config_versions.outputs.S3BASE}}/redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}.tgz
 
     - name: perist redis
       if: steps.redis-already-built.outcome != 'success'
@@ -127,3 +117,14 @@ jobs:
           redis/src/redis-check-rdb
           redis/src/redis-benchmark
           redis/src/redis-cli
+
+    - name: install s3cmd
+      if: steps.redis-already-built.outcome != 'success'
+      run: |
+        pip3 install s3cmd
+
+    - name: persist redis to s3
+      if: steps.redis-already-built.outcome != 'success' && steps.iamafork.outputs.IAMAFORK != 'false'
+      run: |
+        s3cmd --access_key=${{secrets.AWS_ACCESS_KEY_ID}} --secret_key=${{secrets.AWS_SECRET_ACCESS_KEY}} --region=us-east-1 put -P redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}.tgz \
+          ${{steps.get_config_versions.outputs.S3BASE}}/redis-${{steps.get_config_versions.outputs.PACKAGEDREDISVERSION}}-${{inputs.osnick}}-${{inputs.arch}}.tgz
