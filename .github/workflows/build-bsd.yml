@@ -31,5 +31,4 @@ jobs:
       machine_host: ubuntu-latest
       osnick: freebsd13.2
       outside_deps: apt-get update -qq && apt-get install -qqy jq
-      deps: |
-        sudo pkg install -y bash gmake
+      deps: sudo pkg install -y bash gmake

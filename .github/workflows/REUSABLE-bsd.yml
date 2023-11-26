@@ -93,7 +93,7 @@ jobs:
         shell: bash
         architecture: ${{inputs.arch}}
         run: |
-            ${{inputs.deps}}}
+            ${{inputs.deps}}
             bash ${{inputs.build_script}}
 
     - name: package redis for s3
