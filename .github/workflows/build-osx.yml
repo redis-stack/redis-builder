@@ -19,21 +19,21 @@ permissions:
 
 jobs:
 
-    macos-arm64:
+    # macos-arm64:
+    #     uses: ./.github/workflows/REUSABLE-osx.yml
+    #     secrets: inherit
+    #     with:
+    #         macos_type: macos-latest-large
+    #         deps: brew install openssl@3 coreutils
+    #         arch: arm64
+    #         build_script: scripts/build-osx-arm.sh
+    #         osnick: monterey
+
+    macos-x86_64:
         uses: ./.github/workflows/REUSABLE-osx.yml
         secrets: inherit
         with:
-            macos_type: macos-latest-large
+            macos_type: macos-latest
             deps: brew install openssl@3 coreutils
-            arch: arm64
-            build_script: scripts/build-osx-arm.sh
+            build_script: scripts/build-osx.sh
             osnick: monterey
-
-#     macos-x86_64:
-#         uses: ./.github/workflows/REUSABLE-osx.yml
-#         secrets: inherit
-#         with:
-#             macos_type: macos-latest
-#             deps: brew install openssl@3 coreutils
-#             build_script: scripts/build-osx.sh
-#             osnick: monterey
