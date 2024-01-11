@@ -1,6 +1,6 @@
 name: Build (arm64) redis
 
-on: 
+on:
     push:
         paths-ignore:
             - 'docs/**'
@@ -46,6 +46,15 @@ jobs:
           subnet-id: ${{ secrets.AWS_SUBNET_ID }}
           security-group-id: ${{ secrets.AWS_SECGROUP_ID }}
 
+  debian-bullseye-arm64:
+    uses: ./.github/workflows/REUSABLE-linux.yml
+    secrets: inherit
+    with:
+        docker_image: debian:bullseye-slim
+        deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+        osnick: bullseye
+        arch: arm64
+
   ubuntu-bionic-arm64:
     needs: start-arm64-runner
     uses: ./.github/workflows/REUSABLE-linux.yml
@@ -66,12 +75,59 @@ jobs:
         arch: arm64
     secrets: inherit
 
+  ubuntu-jammy-arm64:
+    needs: start-arm64-runner
+    uses: ./.github/workflows/REUSABLE-linux.yml
+    with:
+        docker_image: ubuntu:22.04
+        deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+        osnick: ubuntu22.04
+        arch: arm64
+    secrets: inherit
+
+  rhel7-arm64:
+      uses: ./.github/workflows/REUSABLE-linux.yml
+      secrets: inherit
+      with:
+          docker_image: centos:7
+          deps: |
+              yum install -y epel-release
+              yum install -y gcc make jemalloc-devel openssl-devel python3 python3-pip jq wget
+          osnick: rhel7
+          arch: arm64
+
+  rhel8-arm64:
+      uses: ./.github/workflows/REUSABLE-linux.yml
+      secrets: inherit
+      with:
+          docker_image: rockylinux:8
+          deps: |
+              dnf install -y epel-release
+              dnf install -y gcc make jemalloc-devel openssl-devel tar git python3 python3-pip jq wget
+          osnick: rhel8
+          arch: arm64
+
+  rhel9-arm64:
+      uses: ./.github/workflows/REUSABLE-linux.yml
+      secrets: inherit
+      with:
+          docker_image: rockylinux:9
+          deps: |
+              dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+              dnf install -y gcc make jemalloc-devel openssl-devel tar git python3 python3-pip jq wget
+          osnick: rhel9
+          arch: arm64
+
   stop-arm64-runner:
     name: Stop self-hosted EC2 runner
     needs:
       - start-arm64-runner
       - ubuntu-bionic-arm64
       - ubuntu-focal-arm64
+      - ubuntu-jammy-arm64
+      - rhel7-arm64
+      - rhel8-arm64
+      - rhel9-arm64
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
