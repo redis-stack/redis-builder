@@ -1,0 +1,41 @@
+name: Build (intel) redis
+
+on:
+    push:
+        paths-ignore:
+            - 'docs/**'
+            - 'README.md'
+        branches:
+            - master
+            - '[0-9].[0-9]'
+            - '[0-9].[0-9].[0-9]'
+    pull_request:
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-linuxx64
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    packages: write
+
+jobs:
+
+    debian-bullseye-i386:
+        uses: ./.github/workflows/REUSABLE-linux.yml
+        secrets: inherit
+        with:
+            docker_image: i386/debian:bullseye
+            deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+            osnick: bullseye
+            arch: i386
+
+    ubuntu-bionic-i386:
+        uses: ./.github/workflows/REUSABLE-linux.yml
+        secrets: inherit
+        with:
+            docker_image: ubuntu:20.04
+            deps: apt-get update -qq && apt-get install -qqy build-essential libssl-dev python3 python3-pip jq wget
+            osnick: ubuntu20.04
+            arch: i386
